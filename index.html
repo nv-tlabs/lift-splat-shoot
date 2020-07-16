@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=UA-156935549-2"></script> -->
+  <!-- <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-156935549-2');
+  </script> -->
+
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Other -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.4.2/handlebars.min.js"></script>
+
+    <title>Lift, Splat, Shoot: Encoding Images from Arbitrary Camera Rigs by Implicitly Unprojecting to 3D</title>
+  </head>
+  <body>
+
+    <!-- header -->
+    <div class='jumbotron' style="background-color:#99ccff">
+    <div class="container">
+    <h1 class="text-center">Lift, Splat, Shoot: Encoding Images from Arbitrary Camera Rigs by Implicitly Unprojecting to 3D</h1>
+    <p class='text-center'>Jonah Philion, <a href="http://www.cs.toronto.edu/~fidler/" target="_blank">Sanja Fidler</a></p>
+    <p class='text-center'>NVIDIA, Vector Institute, University of Toronto</p>
+    <p class='text-center'>ECCV 2020</p>
+    <p class='text-center'><img src='imgs/hook.jpg' class='img-fluid' style='height:250px; border-radius:15px; padding:5px'></p>
+    </div>
+    </div>
+
+    <div class="container">
+
+      <p>
+        A critical goal of perception for autonomous vehicles is to merge semantic representations extracted from raw sensor data into a single ``bird's-eye-view'' coordinate frame for consumption by motion planning.
+      </p>
+
+    <hr/>
+
+    <span class="border border-white">
+    <h4 class="text-center">News</h4>
+    <ul>
+      <li>[July 2020] Paper released...</li>
+    </ul>
+    </span>
+
+    <hr/>
+
+    <!-- <span class="border border-white">
+      <h4 class="text-center">Paper</h4>
+      <div class='row'>
+        <div class='col'>
+          <img src='icon.jpg' class='img-fluid float-right' style='height:180px; border: solid; border-radius:30px;'>
+        </div>
+        <div class='col'>
+          <p class="card-text">Jonah Philion, Sanja Fidler</p>
+          <p class="card-text">Learning to Evaluate Perception Models Using Planner-Centric Metrics</p>
+          <p class="card-text">CVPR, 2020. (poster) (to appear)</p>
+          <p class="card-text">[<a href="https://arxiv.org/abs/2004.08745" target="_blank">preprint</a>] [<a href="cite.txt" target="_blank">bibtex</a>]</p>
+        </div>
+      </div>
+    </span>
+
+    <hr/>
+
+    <h4 class='text-center'>Synopsis of Results</h4>
+
+    <b>Human evaluation</b> We generate pairs of detection mistakes such that, for every pair, NDS ranks one set of detection mistakes worse but PKL considers the other set of detection mistakes worse. We then ask humans to choose which mistake was more dangerous. We find that in 79% of the generated scenarios, the humans side with our metric, PKL.
+    <div class='row justify-content-center'>
+      <div class='col-auto'>
+        <table class="table table-responsive text-center">
+          <thead>
+            <tr>
+              <td>NDS</td>
+              <td>PKL</td>
+              <td>Scenes</td>
+              <td>Responses</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope='row'><font color="red">21%</font></th>
+              <th scope='row'><font color='green'>79%</font></th>
+              <td>75</td>
+              <td>730</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p><b>Comparison to hand-designed metrics</b> On the left, we show that PKL largely agrees with NDS under canonical noise models such as translation error. On the right, we show that while NDS penalizes false negatives equally independent of context, PKL penalizes false negatives more strongly if the missed detection is close to the ego vehicle or moving at high speeds.</p>
+
+    <div class='row'>
+      <div class='col'>
+        <img src='together.png' class='img-fluid'>
+      </div>
+    </div>
+
+    <br>
+    <p><b>False Negative/False Positive Sensitivity</b> We visualize the "importance" that each true object in the scene is detected correctly by removing each object from the scene and re-evaluating the PKL (left). The ego vehicle is shown in green. To visualize the sensitivity of PKL to false positives, we place false positives at each position on a grid local to the ego vehicle and evaluate the PKL (right). Qualitatively, the "worst" false negatives involve objects that are close to the ego vehicle and the "worst" false positives occur in regions where the  ego vehicle is likely to travel in the future.</p>
+
+    
+      <div class='row'>
+        <div class='col-6 text-center'>
+          <img src='importance.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        </div>
+        <div class='col-6 text-center'>
+          <img src='fpos.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        </div>
+      </div>
+    
+    <hr/>
+    </div>
+
+    <h4 class="text-center">Supplementary</h4>
+    <nav>
+      <div class="nav nav-pills justify-content-center" id="nav-tab" role="tablist">
+        <a class="nav-item nav-link active" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab" aria-controls="nav-profile" aria-selected="false">Planner Visualization</a>
+        <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="true">AMT Survey</a>
+        <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#eval" role="tab" aria-controls="nav-profile" aria-selected="false">Evaluation Server</a>
+      </div>
+    </nav>
+
+    <div class="tab-content" id="nav-tabContent"> -->
+
+      <!-- The survey results -->
+      <!-- <div class="tab-pane fade" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+        <div class='container'>
+          <span class="border border-white">
+          <p><b>Human study results</b> We submit a survey to the Amazon Mechanical Turk service in which humans are asked to vote on whether one set of detection mistakes are more dangerous than another set of detection mistakes. An example of the instructions given to the workers is shown below.
+          </p>
+          </span>
+          <span class="border border-white">
+            <img src='https://github.com/L6whTA/L6whTA.github.io/blob/master/amt.png?raw=true' class="img-fluid" height=240 style="border:5px solid #007bff; border-radius: 25px;">
+            <br>
+            <br>
+          </span>
+
+          <span class="border border-white">
+          <p>
+          We recorded 730 responses and found that human's agreed with PKL (our metric) over NDS in <b>79%</b> of scenarios. The 75 scenarios used in the survey are shown below. For each of the scenarios, the two detection sequences with different detection mistakes are shown on the left. The scene that PKL considers more dangerous is boxed in <font color="green">green</font>. The comments that the workers wrote about each of the scenes are shown to the right. The comment is colored <font color="green">green</font> if the commenter agreed with PKL and colored <font color="red">red</font> if the commenter disagreed with PKL.
+          </p>
+          </span>
+
+          <h5 class='text-center'>Mechanical Turk Responses</h5>
+          <div id="quizzes"></div>
+        </div>
+      </div> -->
+
+
+      <!-- The planner results -->
+      <!-- <div class="tab-pane fade show active" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+        <div class='container'>
+          <span class="border border-white">
+            <p><b>Distribution over trajectories</b> We train a model that predicts the future position of the ego vehicle for T timesteps. In the videos below, we visualize the sum of the heatmaps for all future timesteps as a single color for each of the vehicles in the scene. Different objects are given one of ten different colors to facilitate matching cars to their heatmaps. </p>
+          </span>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/HtWLpcjD_yk" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/BI7Gb39z8eY" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/mVqqct7GsgY" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/j5W2e_aWXXc" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/azuUhN3-nuk" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/F9FBll9shA8" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/OyijrTKznMY" allowfullscreen></iframe>
+          </div>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/FmjvD3T6CbA" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade show" id="eval" role="tabpanel" aria-labelledby="nav-home-tab">
+        <span class="border border-white">
+        <p class="text-center">Coming Soon!</p>
+        </span>
+      </div>
+
+      </div>
+
+      <hr/> -->
+
+      <!-- Add gifs -->
+      <script>
+      </script>
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  </body>
+</html>
