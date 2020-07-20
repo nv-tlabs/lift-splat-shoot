@@ -40,7 +40,7 @@
     <div class="container">
 
       <p>
-        A critical goal of perception for autonomous vehicles is to merge semantic representations extracted from raw sensor data into a single ``bird's-eye-view'' coordinate frame for consumption by motion planning.
+        The goal of perception for autonomous vehicles is to extract semantic representations from multiple sensors and fuse these represen- tations into a single “bird’s-eye-view” coordinate frame for consumption by motion planning. We propose a new end-to-end architecture that di- rectly extracts a bird’s-eye-view representation of a scene given image data from an arbitrary number of cameras. The core idea behind our approach is to “lift” each image individually into a frustum of features for each camera, then “splat” all frustums into a rasterized bird’s-eye- view grid. By training on the entire camera rig, we provide evidence that our model is able to learn not only how to represent images but how to fuse predictions from all cameras into a single cohesive representation of the scene while being robust to calibration error. On standard bird’s- eye-view tasks such as object segmentation and map segmentation, our model outperforms all baselines and prior work. In pursuit of the goal of learning dense representations for motion planning, we show that the representations inferred by our model enable interpretable end-to-end motion planning by “shooting” template trajectories into a bird’s-eye- view cost map output by our network. We benchmark our approach against models that use oracle depth from lidar.
       </p>
 
     <hr/>
@@ -48,27 +48,33 @@
     <span class="border border-white">
     <h4 class="text-center">News</h4>
     <ul>
-      <li>[July 2020] Paper released...</li>
+      <li>[July 2020] camera-ready submitted [<a href="imgs/paper.pdf" target="_blank">paper</a>]</li>
     </ul>
     </span>
 
     <hr/>
 
-    <!-- <span class="border border-white">
+    <span class="border border-white">
       <h4 class="text-center">Paper</h4>
       <div class='row'>
         <div class='col'>
-          <img src='icon.jpg' class='img-fluid float-right' style='height:180px; border: solid; border-radius:30px;'>
+          <img src='imgs/icon.jpg' class='img-fluid float-right' style='height:180px; border: solid; border-radius:30px;'>
         </div>
         <div class='col'>
           <p class="card-text">Jonah Philion, Sanja Fidler</p>
-          <p class="card-text">Learning to Evaluate Perception Models Using Planner-Centric Metrics</p>
-          <p class="card-text">CVPR, 2020. (poster) (to appear)</p>
-          <p class="card-text">[<a href="https://arxiv.org/abs/2004.08745" target="_blank">preprint</a>] [<a href="cite.txt" target="_blank">bibtex</a>]</p>
+          <p class="card-text">Lift, Splat, Shoot: Encoding Images from Arbitrary Camera Rigs by Implicitly Unprojecting to 3D</p>
+          <p class="card-text">ECCV, 2020. (poster) (to appear)</p>
+          <p class="card-text">[<a href="imgs/paper.pdf" target="_blank">preprint</a>]</p>
         </div>
       </div>
     </span>
 
+    <div class="embed-responsive embed-responsive-16by9">
+      <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/ngEN2N6Rkos" allowfullscreen></iframe>
+    </div>
+
+
+    <!-- 
     <hr/>
 
     <h4 class='text-center'>Synopsis of Results</h4>
