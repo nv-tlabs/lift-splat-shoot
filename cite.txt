@@ -1,0 +1,8 @@
+@misc{philion2020lift,
+    title={Lift, Splat, Shoot: Encoding Images From Arbitrary Camera Rigs by Implicitly Unprojecting to 3D},
+    author={Jonah Philion and Sanja Fidler},
+    year={2020},
+    eprint={2008.05711},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
