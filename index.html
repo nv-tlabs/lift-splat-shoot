@@ -77,38 +77,67 @@
 
     <hr/>
     <h4 class='text-center'>Main Idea</h4>
-    <b>Lift, Splat, Shoot</b> Our goal is to design a model that takes as input multi-view image data from any camera rig and outputs a semantics in the reference frame of the camera rig as determined by the extrinsics and intrinsics of the cameras. The tasks we consider in this paper are bird's-eye-view vehicle segmentation, bird's-eye-view lane segmentation, drivable area segmentation, and motion planning.
+    <b>Lift, Splat, Shoot</b> Our goal is to design a model that takes as input multi-view image data from any camera rig and outputs a semantics in the reference frame of the camera rig as determined by the extrinsics and intrinsics of the cameras. The tasks we consider in this paper are <span style="color:#0191F7">bird's-eye-view vehicle segmentation</span>, <span style="color:#00FFFF">bird's-eye-view lane segmentation</span>, <span style="color:#FF7F4F">drivable area segmentation</span>, and <span style="color:#C71585">motion planning</span>. Our network is composed of an initial per-image CNN followed by a bird's-eye-view CNN connected by a "Lift-Splat" pooling layer (left). To "lift" images into 3D, the per-image CNN performs an attention-style operation at each pixel over a set of discrete depths (right).
 
-    <p class='text-center'><img src='imgs/newsplat.jpg' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 120px;"></p>
+    <!-- <div class='row'>
+    <div class='col-6 text-center'>
+        <img src='imgs/newsplat.jpg' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+      </div>
+      <div class='col-6 text-center'>
+        <img src='imgs/lift.png' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+      </div>
+    </div> -->
+    <p class='text-center'><img src='imgs/together.png' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 160px;"></p>
 
-    <b>Learning Cost Maps for Planning</b> We frame end-to-end motion planning as classification over a set of template trajectories (left). We define the logit for template to be the sum of values in the bird's-eye-view cost map output by our model (right). We then train the model to maximize the likelihood of expert trajectories.
+    <b>Learning Cost Maps for Planning</b> We frame end-to-end motion planning ("shooting") as classification over a set of fixed template trajectories (left). We define the logit for template to be the sum of values in the bird's-eye-view cost map output by our model (right). We then train the model to maximize the likelihood of expert trajectories.
 
-    <p class='text-center'><img src='imgs/eq.png' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 120px;"></p>
+    <p class='text-center'><img src='imgs/eq.png' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 200px;">
+    </p>
 
-    <b>Equivariance</b> To be maximally useful, models that perform inference in the bird's-eye-view frame need to generalize to any choice of bird's-eye-view coordinates. Our model is designed such that it roughly respects equivariance under translations and rotations of the camera extrinsics.
+    <b>Equivariance</b> To be maximally useful, models that perform inference in the bird's-eye-view frame need to generalize to any choice of bird's-eye-view coordinates. Our model is designed such that it roughly respects equivariance under translations (top left) and rotations (top right) of the camera extrinsics. Lift-Splat Pooling is also exactly permutation invariant (bottom left) and roughly invariant to image translation (bottom right).
 
     <div class='row'>
       <div class='col-6 text-center'>
         <img src='imgs/sym.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        <figcaption class="figure-caption">Extrinsic Translation</figcaption>
       </div>
       <div class='col-6 text-center'>
         <img src='imgs/rot.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        <figcaption class="figure-caption">Extrinsic Rotation</figcaption>
+      </div>
+    </div>
+    <br>
+
+    <div class='row'>
+      <div class='col-6 text-center'>
+        <img src='imgs/perm.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        <figcaption class="figure-caption">Image Permutation</figcaption>
+      </div>
+      <div class='col-6 text-center'>
+        <img src='imgs/im.gif' class='img-fluid' style="border:1px solid #000000; border-radius: 25px;">
+        <figcaption class="figure-caption">Image Translation</figcaption>
       </div>
     </div>
     <br>
 
     <b>Results</b> We outperform baselines on bird's-eye-view segmentation. We demonstrate transfer across camera rigs in two scenarios of increasing difficulty. In the first, we drop cameras at test time from the same camera rig that was used during training. In the second, we test on an entirely new camera rig (Lyft dataset) from what was used during training (nuScenes dataset).
 
-    <p class='text-center'><img src='imgs/results.png' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 120px;"></p>
+    <p class='text-center'><img src='imgs/results.png' class='img-fluid' style="border:0px solid #000000; border-radius: 15px; height: 120px;">
+    <figcaption class="figure-caption text-center">Bird's-Eye-View Segmentation IOU (nuScenes and Lyft)</figcaption>
+    </p>
 
-    <p class='text-center'><img src='imgs/nusc.gif' class='img-fluid' style='height:250px; border-radius:15px; padding:5px'></p>
+    <p class='text-center'><img src='imgs/nusc.gif' class='img-fluid' style='height:250px; border-radius:15px; padding:5px'>
+    <figcaption class="figure-caption text-center"><b>nuScenes validation set</b> Input images are shown on the left. BEV inference output by our model is shown on the right. The BEV semantics are additionally projected back onto the input images for visualization convenience.</figcaption>
+    </p>
 
     <div class='row'>
       <div class='col-6 text-center'>
-        <iframe src="https://drive.google.com/file/d/1dGU0zmsxJgFtXMkkHrD2P6DB_JjlvYnQ/preview" width="440" height="280"></iframe>
+        <iframe src="https://drive.google.com/file/d/1dGU0zmsxJgFtXMkkHrD2P6DB_JjlvYnQ/preview" width="90%"></iframe>
+        <figcaption class="figure-caption text-center"><b>Camera Dropout</b> At test time, we remove different cameras from the camera rig. When a camera is removed, the network imputes semantics in the blind-spot by using information in the remaining cameras as well as priors about object shapes and road structure.</figcaption>
       </div>
       <div class='col-6 text-center'>
-        <iframe src="https://drive.google.com/file/d/1XwqzDYfzXhky1WNuXTKy7i-jVXgp4hc_/preview" width="440" height="280"></iframe>
+        <iframe src="https://drive.google.com/file/d/1XwqzDYfzXhky1WNuXTKy7i-jVXgp4hc_/preview" width="90%"></iframe>
+        <figcaption class="figure-caption text-center"><b>Train on nuScenes -> Test on Lyft</b> We evaluate a model trained on the nuScenes dataset on the Lyft dataset. Segmentations output by the model are fuzzy but still meaningful. Quantitative transfer results against baselines can be found in our <a href='https://arxiv.org/pdf/2008.05711.pdf' target='_blank'>paper</a>.</figcaption>
       </div>
     </div>
 
