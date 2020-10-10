@@ -1,6 +1,0 @@
-@inproceedings{philion2020lift,
-    title={Lift, Splat, Shoot: Encoding Images From Arbitrary Camera Rigs by Implicitly Unprojecting to 3D},
-    author={Jonah Philion and Sanja Fidler},
-    booktitle={Proceedings of the European Conference on Computer Vision},
-    year={2020},
-}
