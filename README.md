@@ -36,7 +36,7 @@ Download a pre-trained BEV vehicle segmentation model from here: [https://drive.
 | 32.07      | 33.03 |
 
 ### Evaluate a model
-Evaluate the IOU of a model on the nuScenes validation set:
+Evaluate the IOU of a model on the nuScenes validation set. To evaluate on the "mini" split, pass `mini`. To evaluate on the "trainval" split, pass `trainval`.
 
 ```
 python main.py eval_model_iou mini/trainval --modelf=MODEL_LOCATION --dataroot=NUSCENES_ROOT

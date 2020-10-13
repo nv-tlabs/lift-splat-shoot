@@ -111,7 +111,7 @@ def lidar_check(version,
                 ax = plt.subplot(gs[:, 4:5])
                 plt.imshow(binimgs[si].squeeze(0).T, origin='lower', cmap='Greys', vmin=0, vmax=1)
 
-                imname = f'lcheck{epoch:03}_{si:05}_{batchi:02}.jpg'
+                imname = f'lcheck{epoch:03}_{batchi:05}_{si:02}.jpg'
                 print('saving', imname)
                 plt.savefig(imname)
 
@@ -342,7 +342,7 @@ def viz_model_preds(version,
                 ax = plt.subplot(gs[0, :])
                 ax.get_xaxis().set_ticks([])
                 ax.get_yaxis().set_ticks([])
-                plt.setp(ax.spines.values(), color='#76b900', linewidth=2)
+                plt.setp(ax.spines.values(), color='b', linewidth=2)
                 plt.legend(handles=[
                     mpatches.Patch(color=(0.0, 0.0, 1.0, 1.0), label='Output Vehicle Segmentation'),
                     mpatches.Patch(color='#76b900', label='Ego Vehicle'),
