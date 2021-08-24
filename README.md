@@ -27,7 +27,7 @@ If you found this codebase useful in your research, please consider citing
 Download nuscenes data from [https://www.nuscenes.org/](https://www.nuscenes.org/). Install dependencies.
 
 ```
-pip install nuscenes-devkit tensorboardY efficientnet_pytorch
+pip install nuscenes-devkit tensorboardX efficientnet_pytorch==0.7.0
 ```
 
 ### Pre-trained Model
