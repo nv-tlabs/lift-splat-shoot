@@ -10,6 +10,8 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 from PIL import Image
 import matplotlib.patches as mpatches
+import os
+import json
 
 from .data import compile_data
 from .tools import (ego_to_cam, get_only_in_img_mask, denormalize_img,
@@ -361,3 +363,39 @@ def viz_model_preds(version,
                 print('saving', imname)
                 plt.savefig(imname)
                 counter += 1
+
+
+def download_events():
+    jobids = range(2353965, 2353980)
+
+    # for jobid in jobids:
+    #     cmd = f'~/ngc result download --file /joblog.log {jobid} --dest ./storage'
+    #     print(cmd)
+    #     os.system(cmd)
+    ###########################################
+    # for jobid in jobids:
+    #     cmd = f'~/ngc batch info {jobid} --format_type=json > ./storage/{jobid}.json'
+    #     print(cmd)
+    #     os.system(cmd)
+    ###########################################
+    def get_iou(fname):
+        # print('reading', fname)
+        ious = []
+        with open(fname, 'r') as reader:
+            for line in reader:
+                if 'iou' in line:
+                    ious.append(line.split(',')[-1].split(':')[-1].replace('}\n', ''))
+        return max(ious)
+
+    for jobid in jobids:
+        fname = f'./storage/{jobid}.json'
+        if not os.path.isfile(fname):
+            continue
+        # print("reading", fname)
+        with open(fname, 'r') as reader:
+            info = json.load(reader)
+        cmd = info['jobDefinition']['command']
+        pct = float(cmd.split('--')[1].split('=')[-1])
+
+        iou = get_iou(f'./storage/{jobid}/joblog.log')
+        print(pct, iou)
