@@ -1,0 +1,9 @@
+**/*.jpg
+**/*.png
+# **/*.pt
+runs/
+storage/
+plot_data/
+public/
+Dockerfile
+README.md

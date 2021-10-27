@@ -40,6 +40,7 @@ def train(version,
             nworkers=10,
             lr=1e-3,
             weight_decay=1e-7,
+            pdata = 1.0,
             ):
     grid_conf = {
         'xbound': xbound,
@@ -61,6 +62,9 @@ def train(version,
     trainloader, valloader = compile_data(version, dataroot, data_aug_conf=data_aug_conf,
                                           grid_conf=grid_conf, bsz=bsz, nworkers=nworkers,
                                           parser_name='segmentationdata')
+
+    # take p% of the data
+    trainloader.dataset.ixes = trainloader.dataset.ixes[:int(pdata * len(trainloader.dataset.ixes))]
 
     device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
 
