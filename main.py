@@ -13,7 +13,6 @@ if __name__ == '__main__':
     Fire({
         'lidar_check': src.explore.lidar_check,
         'cumsum_check': src.explore.cumsum_check,
-        'download_events': src.explore.download_events,
 
         'train': src.train.train,
         'eval_model_iou': src.explore.eval_model_iou,
