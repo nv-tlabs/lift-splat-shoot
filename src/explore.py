@@ -118,7 +118,7 @@ def lidar_check(version,
 
 def cumsum_check(version,
                 dataroot='/data/nuscenes',
-                gpuid=1,
+                gpuid=0,
 
                 H=900, W=1600,
                 resize_lim=(0.193, 0.225),
@@ -154,7 +154,7 @@ def cumsum_check(version,
                 }
     trainloader, valloader = compile_data(version, dataroot, data_aug_conf=data_aug_conf,
                                           grid_conf=grid_conf, bsz=bsz, nworkers=nworkers,
-                                          parser_name='segmentationdata')
+                                 grid_conf         parser_name='segmentationdata')
 
     device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
     loader = trainloader
@@ -194,7 +194,7 @@ def cumsum_check(version,
 def eval_model_iou(version,
                 modelf,
                 dataroot='/data/nuscenes',
-                gpuid=1,
+                gpuid=0,
 
                 H=900, W=1600,
                 resize_lim=(0.193, 0.225),
@@ -236,10 +236,10 @@ def eval_model_iou(version,
 
     model = compile_model(grid_conf, data_aug_conf, outC=1)
     print('loading', modelf)
-    model.load_state_dict(torch.load(modelf))
-    model.to(device)
+    model.load_state_dict(torch.load(modelf))  #state_dict를 이용하여 모델의 parameter 값 불러옴
+    model.to(device) # gpu로 불러오며 cuda에 최적화된 모델로 변경
 
-    loss_fn = SimpleLoss(1.0).cuda(gpuid)
+    loss_fn = SimpleLoss(1.0).cuda(gpuid) # BCEWithLogitsLoss function 이용
 
     model.eval()
     val_info = get_val_info(model, valloader, loss_fn, device)
@@ -250,7 +250,7 @@ def viz_model_preds(version,
                     modelf,
                     dataroot='/data/nuscenes',
                     map_folder='/data/nuscenes/mini',
-                    gpuid=1,
+                    gpuid=0,
                     viz_train=False,
 
                     H=900, W=1600,
@@ -259,7 +259,8 @@ def viz_model_preds(version,
                     bot_pct_lim=(0.0, 0.22),
                     rot_lim=(-5.4, 5.4),
                     rand_flip=True,
-
+                    
+                    # ?? bound의 크기 정체?
                     xbound=[-50.0, 50.0, 0.5],
                     ybound=[-50.0, 50.0, 0.5],
                     zbound=[-10.0, 10.0, 20.0],
@@ -273,7 +274,8 @@ def viz_model_preds(version,
         'ybound': ybound,
         'zbound': zbound,
         'dbound': dbound,
-    }
+    } 
+    
     cams = ['CAM_FRONT_LEFT', 'CAM_FRONT', 'CAM_FRONT_RIGHT',
             'CAM_BACK_LEFT', 'CAM_BACK', 'CAM_BACK_RIGHT']
     data_aug_conf = {
@@ -290,30 +292,32 @@ def viz_model_preds(version,
                                           grid_conf=grid_conf, bsz=bsz, nworkers=nworkers,
                                           parser_name='segmentationdata')
     loader = trainloader if viz_train else valloader
-    nusc_maps = get_nusc_maps(map_folder)
+    nusc_maps = get_nusc_maps(map_folder) #map jason 파일 불러오기
 
-    device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}')
+    device = torch.device('cpu') if gpuid < 0 else torch.device(f'cuda:{gpuid}') # cuda gpu 가속
 
-    model = compile_model(grid_conf, data_aug_conf, outC=1)
+    model = compile_model(grid_conf, data_aug_conf, outC=1) #모델 불러오기
     print('loading', modelf)
-    model.load_state_dict(torch.load(modelf))
+    model.load_state_dict(torch.load(modelf)) #
     model.to(device)
 
     dx, bx, _ = gen_dx_bx(grid_conf['xbound'], grid_conf['ybound'], grid_conf['zbound'])
     dx, bx = dx[:2].numpy(), bx[:2].numpy()
 
+    # nuscenes dataset에서 장면에 맞는 map을 가져오기위함
     scene2map = {}
     for rec in loader.dataset.nusc.scene:
         log = loader.dataset.nusc.get('log', rec['log_token'])
         scene2map[rec['name']] = log['location']
 
-
+    # plot 사이즈 정하기
     val = 0.01
     fH, fW = final_dim
     fig = plt.figure(figsize=(3*fW*val, (1.5*fW + 2*fH)*val))
     gs = mpl.gridspec.GridSpec(3, 3, height_ratios=(1.5*fW, fH, fH))
     gs.update(wspace=0.0, hspace=0.0, left=0.0, right=1.0, top=1.0, bottom=0.0)
 
+    
     model.eval()
     counter = 0
     with torch.no_grad():
