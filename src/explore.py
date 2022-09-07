@@ -37,7 +37,7 @@ def lidar_check(version,
                 dbound=[4.0, 45.0, 1.0],
 
                 bsz=1,
-                nworkers=10,
+                nworkers=2,
                 ):
     grid_conf = {
         'xbound': xbound,
@@ -118,7 +118,7 @@ def lidar_check(version,
 
 def cumsum_check(version,
                 dataroot='/data/nuscenes',
-                gpuid=1,
+                gpuid=0,
 
                 H=900, W=1600,
                 resize_lim=(0.193, 0.225),
@@ -133,7 +133,7 @@ def cumsum_check(version,
                 dbound=[4.0, 45.0, 1.0],
 
                 bsz=4,
-                nworkers=10,
+                nworkers=2,
                 ):
     grid_conf = {
         'xbound': xbound,
@@ -194,7 +194,7 @@ def cumsum_check(version,
 def eval_model_iou(version,
                 modelf,
                 dataroot='/data/nuscenes',
-                gpuid=1,
+                gpuid=0,
 
                 H=900, W=1600,
                 resize_lim=(0.193, 0.225),
@@ -209,7 +209,7 @@ def eval_model_iou(version,
                 dbound=[4.0, 45.0, 1.0],
 
                 bsz=4,
-                nworkers=10,
+                nworkers=2,
                 ):
     grid_conf = {
         'xbound': xbound,
@@ -250,7 +250,7 @@ def viz_model_preds(version,
                     modelf,
                     dataroot='/data/nuscenes',
                     map_folder='/data/nuscenes/mini',
-                    gpuid=1,
+                    gpuid=0,
                     viz_train=False,
 
                     H=900, W=1600,
@@ -266,7 +266,7 @@ def viz_model_preds(version,
                     dbound=[4.0, 45.0, 1.0],
 
                     bsz=4,
-                    nworkers=10,
+                    nworkers=2,
                     ):
     grid_conf = {
         'xbound': xbound,
