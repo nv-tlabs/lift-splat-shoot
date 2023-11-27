@@ -127,6 +127,7 @@ class BevEncode(nn.Module):
 
 
 class LiftSplatShoot(nn.Module):
+    # 备注
     def __init__(self, grid_conf, data_aug_conf, outC):
         super(LiftSplatShoot, self).__init__()
         self.grid_conf = grid_conf
