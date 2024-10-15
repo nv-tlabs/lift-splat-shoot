@@ -3,8 +3,12 @@ Copyright (C) 2020 NVIDIA Corporation.  All rights reserved.
 Licensed under the NVIDIA Source Code License. See LICENSE at https://github.com/nv-tlabs/lift-splat-shoot.
 Authors: Jonah Philion and Sanja Fidler
 """
+import numpy as np
+from typing import Optional, Any
 
 import torch
+import matplotlib
+from matplotlib import pyplot as plt
 from torch import nn
 from efficientnet_pytorch import EfficientNet
 from torchvision.models.resnet import resnet18
@@ -49,10 +53,14 @@ class CamEncode(nn.Module):
         return x.softmax(dim=1)
 
     def get_depth_feat(self, x):
-        x = self.get_eff_depth(x)
-        # Depth
-        x = self.depthnet(x)
 
+        # x  [B * N, 3, H, W] -> [B * N, feat_dim, H_Down, W_Down]
+        efficient_net_feats = self.get_eff_depth(x)
+
+        # First D channels corresponds to your depth distributions, last C is your features.
+        x = self.depthnet(efficient_net_feats)
+
+        # Depth is basically your alpha which creates the probability distribution across dpeth
         depth = self.get_depth_dist(x[:, :self.D])
         new_x = depth.unsqueeze(1) * x[:, self.D:(self.D + self.C)].unsqueeze(2)
 
@@ -84,7 +92,7 @@ class CamEncode(nn.Module):
     def forward(self, x):
         depth, x = self.get_depth_feat(x)
 
-        return x
+        return depth, x
 
 
 class BevEncode(nn.Module):
@@ -170,12 +178,13 @@ class LiftSplatShoot(nn.Module):
         """
         B, N, _ = trans.shape
 
-        # undo post-transformation
+        # 1. De-apply the augmentation such that we have consistent geometric objects.
+        # N is the number of cameras.
         # B x N x D x H x W x 3
         points = self.frustum - post_trans.view(B, N, 1, 1, 1, 3)
         points = torch.inverse(post_rots).view(B, N, 1, 1, 1, 3, 3).matmul(points.unsqueeze(-1))
 
-        # cam_to_ego
+        # 2. Perform transformation from camera to ego
         points = torch.cat((points[:, :, :, :, :, :2] * points[:, :, :, :, :, 2:3],
                             points[:, :, :, :, :, 2:3]
                             ), 5)
@@ -190,12 +199,12 @@ class LiftSplatShoot(nn.Module):
         """
         B, N, C, imH, imW = x.shape
 
-        x = x.view(B*N, C, imH, imW)
-        x = self.camencode(x)
+        x = x.view(B*N, C, imH, imW)  # B * N, C, imH, imW
+        depth, x = self.camencode(x)  # B * N, feat_dim, H, W
         x = x.view(B, N, self.camC, self.D, imH//self.downsample, imW//self.downsample)
         x = x.permute(0, 1, 3, 4, 5, 2)
 
-        return x
+        return depth, x
 
     def voxel_pooling(self, geom_feats, x):
         B, N, D, H, W, C = x.shape
@@ -213,8 +222,8 @@ class LiftSplatShoot(nn.Module):
 
         # filter out points that are outside box
         kept = (geom_feats[:, 0] >= 0) & (geom_feats[:, 0] < self.nx[0])\
-            & (geom_feats[:, 1] >= 0) & (geom_feats[:, 1] < self.nx[1])\
-            & (geom_feats[:, 2] >= 0) & (geom_feats[:, 2] < self.nx[2])
+             & (geom_feats[:, 1] >= 0) & (geom_feats[:, 1] < self.nx[1])\
+             & (geom_feats[:, 2] >= 0) & (geom_feats[:, 2] < self.nx[2])
         x = x[kept]
         geom_feats = geom_feats[kept]
 
@@ -241,18 +250,42 @@ class LiftSplatShoot(nn.Module):
 
         return final
 
-    def get_voxels(self, x, rots, trans, intrins, post_rots, post_trans):
+    def get_voxel_and_depth_dist(self, x, rots, trans, intrins, post_rots, post_trans, lidar_pc: Optional[Any] = None):
+        # A batch (B) of frustums (N).
         geom = self.get_geometry(rots, trans, intrins, post_rots, post_trans)
-        x = self.get_cam_feats(x)
 
+        B, N = geom.shape[0], geom.shape[1]
+        depth, x = self.get_cam_feats(x)
+
+        # Divide the dim
+        depth = depth.view(B, N, *depth.shape[1:])
+
+        # Depth contains the post softmax depth logits
+        pred_pc = depth.unsqueeze(5) * geom
+        pred_pc = pred_pc.sum(dim=2)
         x = self.voxel_pooling(geom, x)
+        return pred_pc, x
 
-        return x
-
-    def forward(self, x, rots, trans, intrins, post_rots, post_trans):
-        x = self.get_voxels(x, rots, trans, intrins, post_rots, post_trans)
+    def forward(self, x, rots, trans, intrins, post_rots, post_trans, lidar_pc: Optional[Any] = None):
+        """
+        Perform the forward pass for the whole LSS pipeline
+        :param x: <B, N, C, H, W> The images that we are trying to encode in the pipeline
+        :param rots: <B, N, 3, 3> The rotation matrices that represents the extrinsics for each cameras.
+        :param trans: <B, N, 3> The translation that represents the extrinsics for each cameras.
+        :param intrins: <B, N, 3, 3> The intrinsic matrices for each camera on the sensor rig.
+        :param post_rots: <B, N, 3, 3> Augmentation
+        :param post_trans: <B, N, 3> Augmentation
+        :param lidar_pc: <B, 3> The LIDAR point cloud that we are interested to learn depth from.
+        :return:
+        """
+        # x is the batch of imgs
+        #
+        pred_pc, x = self.get_voxel_and_depth_dist(x, rots, trans, intrins, post_rots, post_trans, lidar_pc)
         x = self.bevencode(x)
-        return x
+
+        B = pred_pc.shape[0]
+        pred_pc = pred_pc.view(B, -1, 3)
+        return pred_pc, x
 
 
 def compile_model(grid_conf, data_aug_conf, outC):

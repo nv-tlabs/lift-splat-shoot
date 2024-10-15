@@ -13,6 +13,7 @@ from pyquaternion import Quaternion
 from PIL import Image
 from functools import reduce
 import matplotlib as mpl
+
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from nuscenes.utils.data_classes import LidarPointCloud
@@ -249,8 +250,8 @@ def get_val_info(model, valloader, loss_fn, device, use_tqdm=False):
     loader = tqdm(valloader) if use_tqdm else valloader
     with torch.no_grad():
         for batch in loader:
-            allimgs, rots, trans, intrins, post_rots, post_trans, binimgs = batch
-            preds = model(allimgs.to(device), rots.to(device),
+            allimgs, rots, trans, intrins, post_rots, post_trans, binimgs, _ = batch
+            _, preds = model(allimgs.to(device), rots.to(device),
                           trans.to(device), intrins.to(device), post_rots.to(device),
                           post_trans.to(device))
             binimgs = binimgs.to(device)

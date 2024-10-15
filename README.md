@@ -26,9 +26,23 @@ If you found this codebase useful in your research, please consider citing
 ### Preparation
 Download nuscenes data from [https://www.nuscenes.org/](https://www.nuscenes.org/). Install dependencies.
 
+Get miniconda in your dev environment
+
 ```
-pip install nuscenes-devkit tensorboardX efficientnet_pytorch==0.7.0
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+chmod +x Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
 ```
+
+Install dependencies
+
+```
+conda env create -f environment.yml
+conda activate lss
+```
+
+Ensure consistent dataroot
+
 
 ### Pre-trained Model
 Download a pre-trained BEV vehicle segmentation model from here: [https://drive.google.com/file/d/1bsUYveW_eOqa4lglryyGQNeC4fyQWvQQ/view?usp=sharing](https://drive.google.com/file/d/1bsUYveW_eOqa4lglryyGQNeC4fyQWvQQ/view?usp=sharing)

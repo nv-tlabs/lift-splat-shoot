@@ -15,6 +15,9 @@ from nuscenes.utils.splits import create_splits_scenes
 from nuscenes.utils.data_classes import Box
 from glob import glob
 
+from pytorch3d.structures import Pointclouds
+from torch.utils.data import default_collate
+
 from .tools import get_lidar_data, img_transform, normalize_img, gen_dx_bx
 
 
@@ -69,7 +72,6 @@ class NuscData(torch.utils.data.Dataset):
                 if rec['channel'] == 'LIDAR_TOP' or (rec['is_key_frame'] and rec['channel'] in self.data_aug_conf['cams']):
                     rec['filename'] = info[rec['filename']]
 
-    
     def get_scenes(self):
         # filter by scene split
         split = {
@@ -219,22 +221,41 @@ class VizData(NuscData):
         imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
         lidar_data = self.get_lidar_data(rec, nsweeps=3)
         binimg = self.get_binimg(rec)
-        
+
+
         return imgs, rots, trans, intrins, post_rots, post_trans, lidar_data, binimg
 
 
 class SegmentationData(NuscData):
     def __init__(self, *args, **kwargs):
         super(SegmentationData, self).__init__(*args, **kwargs)
-    
+        self.nsweeps = 1
+
     def __getitem__(self, index):
         rec = self.ixes[index]
 
         cams = self.choose_cams()
         imgs, rots, trans, intrins, post_rots, post_trans = self.get_image_data(rec, cams)
+        lidar_pc = self.get_lidar_data(rec, self.nsweeps)
+        lidar_pc = lidar_pc.permute(1, 0)
+
         binimg = self.get_binimg(rec)
-        
-        return imgs, rots, trans, intrins, post_rots, post_trans, binimg
+
+        return imgs, rots, trans, intrins, post_rots, post_trans, binimg, lidar_pc
+
+    def collate_fn(self, batch):
+
+        imgs = default_collate(list(map(lambda x: x[0], batch)))
+        rots = default_collate(list(map(lambda x: x[1], batch)))
+        trans = default_collate(list(map(lambda x: x[2], batch)))
+        intrins = default_collate(list(map(lambda x: x[3], batch)))
+        post_rots = default_collate(list(map(lambda x: x[4], batch)))
+        post_trans = default_collate(list(map(lambda x: x[5], batch)))
+        bin_img = default_collate(list(map(lambda x: x[6], batch)))
+        lidar_pc = Pointclouds(list(map(lambda x: x[7], batch)))
+
+        return imgs, rots, trans, intrins, post_rots, post_trans, bin_img, lidar_pc
+
 
 
 def worker_rnd_init(x):
@@ -243,8 +264,9 @@ def worker_rnd_init(x):
 
 def compile_data(version, dataroot, data_aug_conf, grid_conf, bsz,
                  nworkers, parser_name):
+
     nusc = NuScenes(version='v1.0-{}'.format(version),
-                    dataroot=os.path.join(dataroot, version),
+                    dataroot=dataroot,
                     verbose=False)
     parser = {
         'vizdata': VizData,
@@ -255,13 +277,29 @@ def compile_data(version, dataroot, data_aug_conf, grid_conf, bsz,
     valdata = parser(nusc, is_train=False, data_aug_conf=data_aug_conf,
                        grid_conf=grid_conf)
 
-    trainloader = torch.utils.data.DataLoader(traindata, batch_size=bsz,
-                                              shuffle=True,
-                                              num_workers=nworkers,
-                                              drop_last=True,
-                                              worker_init_fn=worker_rnd_init)
-    valloader = torch.utils.data.DataLoader(valdata, batch_size=bsz,
-                                            shuffle=False,
-                                            num_workers=nworkers)
+    if parser_name == 'segmentationdata':
+        trainloader = torch.utils.data.DataLoader(traindata, batch_size=bsz,
+                                                  shuffle=True,
+                                                  num_workers=nworkers,
+                                                  drop_last=True,
+                                                  worker_init_fn=worker_rnd_init,
+                                                  collate_fn=traindata.collate_fn)
+        valloader = torch.utils.data.DataLoader(valdata, batch_size=bsz,
+                                                shuffle=False,
+                                                num_workers=nworkers,
+                                                collate_fn=valdata.collate_fn)
+    elif parser_name == 'vizdata':
+        trainloader = torch.utils.data.DataLoader(traindata, batch_size=bsz,
+                                                  shuffle=True,
+                                                  num_workers=nworkers,
+                                                  drop_last=True,
+                                                  worker_init_fn=worker_rnd_init)
+        valloader = torch.utils.data.DataLoader(valdata, batch_size=bsz,
+                                                shuffle=False,
+                                                num_workers=nworkers)
+    else:
+        raise ValueError(parser_name)
+
+
 
     return trainloader, valloader
